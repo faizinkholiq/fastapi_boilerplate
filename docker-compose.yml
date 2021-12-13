@@ -1,0 +1,41 @@
+version: "3.3"
+
+networks:
+  internal:
+    external: false
+
+services:
+  web:
+    container_name: web
+    build: 
+      context: .
+      dockerfile: ./docker/python/Dockerfile
+    command: uvicorn app.main:app --reload --host 0.0.0.0
+    restart: "no"
+    volumes: 
+      - .:/app
+    ports: 
+      - 8008:8000
+
+  db:
+    container_name: db
+    image: postgres
+    volumes:
+      - ./data/pgsql:/var/lib/postgresql/data
+      - ./app/db/migration:/var/db/migration
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=web
+    ports:
+      - 5432:5432
+    networks:
+      - internal
+  
+  adminer:
+    container_name: adminer
+    image: adminer
+    ports: 
+      - 8080:8080
+    networks:
+      - internal
